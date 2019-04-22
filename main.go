@@ -124,10 +124,10 @@ func getNetworkInterfaceId(pid int) int {
 	scanner := bufio.NewScanner(stdout)
 	interfaces := readStuff(scanner)
 	defer cmd.Wait()
-	re := regexp.MustCompile(`@if\w+`)
+	re := regexp.MustCompile(`eth0@if\w+`)
 	match := re.FindStringSubmatch(interfaces)
 	log.Printf("inteface name %s", match[0])
-	interfaceNumStr := strings.Replace(match[0], "@if", "", 1)
+	interfaceNumStr := strings.Replace(match[0], "eth0@if", "", 1)
 
 	interfaceNum, err := strconv.Atoi(interfaceNumStr)
 	if err != nil {
