@@ -24,11 +24,12 @@
 #   go-tests = true
 #   unused-packages = true
 
-
 [[constraint]]
-  name = "docker.io/go-docker"
-  version = "1.0.0"
+  name = "k8s.io/apimachinery"
+  version = "kubernetes-1.14.1"
 
 [prune]
   go-tests = true
   unused-packages = true
+
+
