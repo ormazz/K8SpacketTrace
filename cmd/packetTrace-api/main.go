@@ -21,6 +21,10 @@ func main() {
 		port = "8888"
 	}
 	config, err := clientcmd.BuildConfigFromFlags("", kubeconfig)
+	if err != nil {
+		log.Printf("no vaild kubecofig")
+		panic(err)
+	}
 	config.TLSClientConfig.Insecure = false
 	if err != nil {
 		log.Fatal(err)
