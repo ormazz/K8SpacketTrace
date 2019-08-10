@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: packet-trace-agents
+  namespace: k8s-packet-trace
+  labels:
+    app: packet-trace-agents
+spec:
+  selector:
+    matchLabels:
+      app: packet-trace-agents
+  template:
+    metadata:
+      labels:
+        app: packet-trace-agents
+    spec:
+      tolerations:
+      - key: node-role.kubernetes.io/master
+        effect: NoSchedule
+      containers:
+      - name: packet-trace-agents
+        image: local/k8s_packet_trace/agent:0.1
+        imagePullPolicy: IfNotPresent
+        resources:
+          requests:
+            cpu: 50m
+            memory: 50Mi
+        ports:
+        - containerPort: 8888
+          name: http
+          protocol: TCP

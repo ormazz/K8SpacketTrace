@@ -11,16 +11,23 @@ import (
 	"github.com/gin-gonic/gin"
 	packet_trace_api "github.com/ormazz/K8SpacketTrace/pkg/packetTrace-api"
 	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 )
 
 func main() {
 	kubeconfig := os.Getenv("KUBECONFIG")
 	port := os.Getenv("AGENTPORT")
+	var err error
+	var config *rest.Config
 	if port == "" {
 		port = "8888"
 	}
-	config, err := clientcmd.BuildConfigFromFlags("", kubeconfig)
+	if kubeconfig != "" {
+		config, err = clientcmd.BuildConfigFromFlags("", kubeconfig)
+	} else {
+		config, err = rest.InClusterConfig()
+	}
 	if err != nil {
 		log.Printf("no vaild kubecofig")
 		panic(err)
@@ -42,14 +49,13 @@ func main() {
 			containerId, containerNode := packet_trace_api.GetContainerIdAndNode(capturePodRequest, clientset)
 			log.Println(containerId)
 			log.Println(containerNode)
-
-			nodeIP := packet_trace_api.GetNodeIp(containerNode, clientset)
-
-			url := "http://" + nodeIP + ":" + port + "/packetcapture"
+			agentIP := packet_trace_api.GetDeamonsetIp(containerNode, clientset)
+			log.Println(agentIP)
+			url := "http://" + agentIP + ":" + port + "/packetcapture"
 			log.Printf(url)
-
-			var jsonStr = []byte(`{"containerId": "47a219b4d55b","seconds": "2"}`)
-
+			containerId = containerId[9:]
+			var jsonStr = []byte(`{"containerId": "` + containerId + `","seconds": "2"}`)
+			log.Printf(`{"containerId": "` + containerId + `","seconds": "2"}`)
 			//url = "http://127.0.0.1:8888/packetcapture"
 			resp, err := http.Post(url, "application/json", bytes.NewBuffer(jsonStr))
 			if err != nil {

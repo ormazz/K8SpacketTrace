@@ -34,6 +34,28 @@ func GetContainerIdAndNode(req CapturePodRequest, clientset kubernetes.Interface
 	return "", ""
 }
 
+func GetDeamonsetIp(nodeName string, clientset kubernetes.Interface) string {
+	api := clientset.CoreV1()
+	ns := "k8s-packet-trace"
+	var field string
+	listOptions := metav1.ListOptions{
+		LabelSelector: "app=packet-trace-agents",
+		FieldSelector: field,
+	}
+	pods, err := api.Pods(ns).List(listOptions)
+	if err != nil {
+		log.Panicln(err)
+		return ""
+	}
+	for _, pod := range pods.Items {
+		if pod.Spec.NodeName == nodeName {
+			return pod.Status.PodIP
+		}
+	}
+
+	return ""
+}
+
 func GetNodeIp(nodeName string, clientset kubernetes.Interface) string {
 	api := clientset.CoreV1()
 	var label, field string

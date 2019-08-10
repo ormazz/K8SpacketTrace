@@ -1,0 +1,29 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  labels:
+    app: packet-trace-api
+  name: packet-trace-api
+  namespace: k8s-packet-trace
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: packet-trace-api
+  template:
+    metadata:
+      labels:
+        app: packet-trace-api
+    spec:
+      containers:
+      - image: local/k8s_packet_trace/api:0.1
+        imagePullPolicy: IfNotPresent
+        name: packet-trace-api
+        ports:
+        - containerPort: 5000
+          name: http
+          protocol: TCP
+        resources:
+          requests:
+            cpu: 100m
+            memory: 70Mi
