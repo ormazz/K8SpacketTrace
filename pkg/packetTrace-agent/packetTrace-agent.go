@@ -22,20 +22,23 @@ func CapturePackets(containerID string, seconds int) string {
 	if err != nil {
 		panic(err)
 	}
-	num := getNetworkInterfaceId(pid)
-	log.Printf("got interface num %d for container %s", num, containerID)
-	interfaceName, err := getInterfaceName(num)
-	log.Printf("interface name for container id %s is %s", containerID, interfaceName)
+	/*
+		num := getNetworkInterfaceId(pid)
+		log.Printf("got interface num %d for container %s", num, containerID)
+		interfaceName, err := getInterfaceName(num)
+		log.Printf("interface name for container id %s is %s", containerID, interfaceName)
+	*/
+
 	t := time.Now()
 	timeString := fmt.Sprint(t.Format("2006-01-02::15:04:05"))
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(seconds)*time.Second)
 	defer cancel() // The cancel should be deferred so resources are cleaned up
 	filename := fmt.Sprint(containerID + "-" + timeString + ".pcap")
-	cmd := exec.CommandContext(ctx, "tcpdump", "-i", interfaceName, "-w", "/tmp/"+filename)
+	cmd := exec.CommandContext(ctx, "nsenter", "-t", strconv.Itoa(pid), "-n", "tcpdump", "-i", "any", "-w", "/tmp/"+filename)
 	err = cmd.Run()
 
 	if ctx.Err() == context.DeadlineExceeded {
-		log.Printf("tcpdump on interface %s for %d seconds", interfaceName, seconds)
+		log.Printf("tcpdump on for %d seconds", seconds)
 		return filename
 	}
 	if err != nil {
@@ -61,10 +64,15 @@ func getInterfaceName(num int) (string, error) {
 }
 
 func getContainerPid(id string) (int, error) {
+
+	dockerApiVersion := os.Getenv("DOCKER_API_VESION")
+	if dockerApiVersion == "" {
+		dockerApiVersion = "1.38"
+	}
 	//docker_cli.NewClient().WithVersion("1.39")
 	//cli, err := docker_cli.cli.NewClientWithOpts(docker_cli.WithVersion("1.39"))
 	//cli, err := client.Client.NewClientWithOpts(client.WithVersion("1.39"))
-	cli, err := client.NewClientWithOpts(client.WithVersion("1.39"))
+	cli, err := client.NewClientWithOpts(client.WithVersion(dockerApiVersion))
 	//cli, err := client.NEW
 	//cli, err := client.NewClientWithOpts(client.FromEnv)
 

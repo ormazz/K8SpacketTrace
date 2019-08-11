@@ -17,10 +17,21 @@ spec:
       tolerations:
       - key: node-role.kubernetes.io/master
         effect: NoSchedule
+      hostNetwork: true
+      hostPID: true
+      volumes:
+        - name: docker-sock
+          hostPath:
+            path: /var/run/docker.sock
       containers:
       - name: packet-trace-agents
         image: local/k8s_packet_trace/agent:0.1
+        volumeMounts:
+          - mountPath: /var/run/docker.sock
+            name: docker-sock
         imagePullPolicy: IfNotPresent
+        securityContext:
+          privileged: true
         resources:
           requests:
             cpu: 50m
